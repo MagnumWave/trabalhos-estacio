@@ -1,11 +1,13 @@
-/* 1 */
+/* 1 código e titulo de obras de 1965 a 1975 */
 SELECT codigo, titulo FROM Obras
-WHERE Salao = 36;
-/* 2 */
+WHERE ano BETWEEN 1503 AND 1769 AND salao = 36;
+
+/* 2 código e título de obras do autor Pablo Picasso que estaõ no 3º andar */
 SELECT O.codigo, titulo FROM Obras O, Autores A, Saloes S 
 WHERE O.autor = A.codigo AND O.salao = S.numero
 	AND A.nome = 'Pablo Picasso' AND S.andar = '3';
-/* 3 */
+	
+/* 3 código e título de obras impressionistas cujo material é argila */
 (SELECT O.codigo, O.titulo FROM Obras O, Esculturas E
 WHERE O.codigo = E.codigo AND E.material = 'argila')
 UNION
@@ -44,7 +46,8 @@ insert into Saloes (numero,andar,area)
 	values (22,'2','16');
 select * from Saloes;
 
-/* 4.a subconsulta */
+/* 4.a nome e nacionalidade dos autores que possuem obras no museu - 
+usando subconsulta */
 INSERT INTO Autores (codigo,nome,nacionalidade)
 	VALUES (3,'Voltaire','Frances');
 INSERT INTO Autores (codigo,nome,nacionalidade)
@@ -60,16 +63,18 @@ WHERE codigo in(SELECT autor FROM Obras);
 SELECT DISTINCT nome, nacionalidade FROM autores A
 JOIN obras O ON O.autor = A.codigo;
 
-/* 5.a subconsulta */
+/* 5.a nome e nacionalidade dos autores que não têm obras no museu -
+usando subconsulta */
 SELECT nome, nacionalidade FROM Autores
 WHERE codigo NOT IN(SELECT autor FROM Obras);
 
-/* 5.b join */
+/* 5.b usando join */
 SELECT O.codigo, nome, nacionalidade FROM Obras O
 RIGHT JOIN Autores A ON A.codigo = O.autor
 WHERE O.codigo IS null;
 
-/* 6.a subconsulta pinturas/obras/autores */
+/* 6.a nome e nacionalidade dos autores que têm apenas pinturas - 
+usando subconsulta */
 SELECT nome, nacionalidade FROM autores A
 WHERE A.codigo IN (
 	SELECT autor FROM Obras O
@@ -84,12 +89,13 @@ select * from Esculturas;
 insert into Pinturas (codigo,estilo,area) values (5,'borratudo','16');
 insert into Pinturas (codigo,estilo,area) values (6,'impressionista','17')
 
-/* 6.b join pinturas/obras/autores */
+/* 6.b usando join */
 SELECT DISTINCT A.nome, A.nacionalidade FROM Pinturas P
 JOIN Obras O ON P.codigo = O.codigo
 JOIN Autores A ON O.autor = A.codigo;
 
-/* 7.a subconsulta */
+/* 7.a nome e nacionalidade dos autores que têm tanto pinturas quanto esculturas - 
+usando subconsulta */
 SELECT nome,nacionalidade FROM autores
 WHERE codigo IN ((
 	SELECT autor FROM obras
@@ -109,7 +115,7 @@ values (7,'volt style','16');
 insert into esculturas (codigo,altura,peso,material)
 values (8,2.13,115.4,'marmore');
 
-/* 7.b join */
+/* 7.b usando join */
 (SELECT A.nome,A.nacionalidade FROM autores A
 JOIN Obras O ON A.codigo = O.autor
 JOIN Esculturas E ON O.codigo = E.codigo)
@@ -133,7 +139,8 @@ values (10,'real monalisa','1503',4,21);
 insert into pinturas (codigo,estilo,area)
 values (10,'embelezista','16');
 
-/* 8a subconsulta */
+/* 8a nome e nacionalidade dos autores que têm ou apenas pinturas
+ou apenas esculturas - usando subconsulta */
 SELECT nome,nacionalidade FROM autores
 WHERE codigo IN ((
 	SELECT autor FROM obras
@@ -148,7 +155,7 @@ WHERE codigo IN ((
 select * from autores;
 insert into autores (codigo,nome,nacionalidade)
 values (5,'Van Gogh','Holandes');
-/* 8.b join */
+/* 8.b usando join */
 (SELECT A.nome,A.nacionalidade FROM autores A
 JOIN Obras O ON A.codigo = O.autor
 JOIN Esculturas E ON O.codigo = E.codigo)
@@ -157,26 +164,30 @@ UNION
 JOIN Obras O ON A.codigo = O.autor
 JOIN Pinturas P ON O.codigo = P.codigo)
 
-/* 9.a codigo dos autores */
+/* 9.a codigo dos autores que não têm obras no museu - 
+usando conjuntos */
 (SELECT codigo FROM autores)
 EXCEPT
 (SELECT autor FROM Obras)
 
-/* 9.b */
+/* 9.b codigo dos autores que possuem apenas pinturas -
+usando conjuntos */
 (SELECT codigo FROM autores)
 INTERSECT
 (SELECT autor FROM Obras
 	WHERE codigo IN(
 		SELECT codigo FROM Pinturas))
 
-/* 9.c */
+/* 9.c codigo dos autores que possuem apenas esculturas -
+usando conjuntos */
 (SELECT codigo FROM autores)
 INTERSECT
 (SELECT autor FROM Obras
 	WHERE codigo IN(
 		SELECT codigo FROM Esculturas))
 		
-/* 9.d */
+/* 9.d codigo dos autores que possuem tanto pinturas quanto esculturas - 
+usando conjuntos */
 ((SELECT autor FROM obras
 WHERE codigo IN (
 	SELECT codigo FROM pinturas))
@@ -187,7 +198,8 @@ WHERE codigo IN (
 INTERSECT
 (SELECT codigo FROM autores)
 
-/* 9.e  */
+/* 9.e codigo dos autores que possuem ou apenas pinturas
+ou apenas esculturas - usando conjuntos */
 /* União */
 ((SELECT DISTINCT autor FROM obras
 WHERE codigo IN (
@@ -197,7 +209,7 @@ UNION
 WHERE codigo IN (
 	SELECT codigo FROM esculturas)))
 /* fim União*/
-EXCEPT
+EXCEPT /* diferença com */
 /* Interseção */
 ((SELECT DISTINCT autor FROM obras
 WHERE codigo IN (
@@ -215,7 +227,23 @@ values (11,'la pintuera','2020',1,21);
 insert into pinturas (codigo,estilo,area)
 values (11,'extrema juanagem','16');
 
-/* 10 pares seguranças mesmo salão mesmo período */
+/* 10 pares seguranças que cuidam do mesmo salão no mesmo período */
+/* bloco de resposta */
+CREATE VIEW v1 AS
+(SELECT F.nome, L.numero, L.horaEntrada, L.horaSaida FROM funcionarios F
+JOIN lotacoes L ON F.rg = L.rg
+WHERE UPPER(F.funcao) = 'SEGURANÇA');
+
+CREATE VIEW v2 AS
+(SELECT F.nome, L.numero, L.horaEntrada, L.horaSaida FROM funcionarios F
+JOIN lotacoes L ON F.rg = L.rg
+WHERE UPPER(F.funcao) = 'SEGURANÇA');
+
+SELECT v1.nome, v2.nome FROM v1, v2
+WHERE v1.horaEntrada = V2.horaEntrada AND v1.horaSaida = v2.horaSaida AND
+	v1.numero = v2.numero AND v1.nome != v2.nome
+/* fim do bloco de resposta */
+
 select * from saloes
 select * from lotacoes
 alter table lotacoes
@@ -257,6 +285,7 @@ alter table funcionarios
 drop constraint funcionarios_rg_fkey;
 drop index idx_funcionarios;
 drop index idx_lotacoes;
+
 
 select * from funcionarios
 select * from lotacoes
@@ -303,19 +332,7 @@ select * from funcionarios
 
 
 /* resposta final */
-CREATE VIEW v1 AS
-(SELECT F.nome, L.numero, L.horaEntrada, L.horaSaida FROM funcionarios F
-JOIN lotacoes L ON F.rg = L.rg
-WHERE UPPER(F.funcao) = 'SEGURANÇA');
 
-CREATE VIEW v2 AS
-(SELECT F.nome, L.numero, L.horaEntrada, L.horaSaida FROM funcionarios F
-JOIN lotacoes L ON F.rg = L.rg
-WHERE UPPER(F.funcao) = 'SEGURANÇA');
-
-SELECT v1.nome, v2.nome FROM v1, v2
-WHERE v1.horaEntrada = V2.horaEntrada AND v1.horaSaida = v2.horaSaida AND
-	v1.numero = v2.numero AND v1.nome != v2.nome
 	
 /* 11 numero dos salões onde tem apenas esculturas */
 SELECT DISTINCT S.numero FROM esculturas E
@@ -324,7 +341,7 @@ JOIN saloes S ON O.salao = S.numero;
 
 select * from saloes
 
-/* 12 nome e rg dos faxineiros que limpam os saloes do 4º andar */
+/* 12 nome e rg dos faxineiros que limpam todos os saloes do 4º andar */
 SELECT nome,rg FROM funcionarios
 WHERE UPPER(funcao) = 'FAXINEIRO' AND rg IN(
 	SELECT rg FROM lotacoes
@@ -345,13 +362,13 @@ where andar = '1'
 insert into saloes (numero,andar,area)
 values (28,1,18);
 
-/* 13 autores brasileiros que tem apenas esculturas */
+/* 13 autores brasileiros que têm apenas esculturas */
 SELECT * FROM esculturas E
 JOIN Obras O ON E.codigo = O.codigo
 JOIN Autores A ON O.autor = A.codigo
 WHERE UPPER(A.nacionalidade) = 'BRASILEIRO';
 
-/* 14 nome e rg seguranças cuidam apenas salão 28 */
+/* 14 nome e rg dos seguranças que cuidam apenas do salão 28 */
 SELECT F.nome, F.rg FROM funcionarios F
 JOIN lotacoes L ON F.rg = L.rg
 JOIN saloes S ON S.numero = L.numero
@@ -373,7 +390,7 @@ select andar,max(area) from saloes
 group by andar
 select * from saloes
 
-/* 16 novo salao nº 70 no 20º andar de 121 m²*/
+/* 16 inserir um novo salao de nº 70, no 20º andar e de 121 m² */
 INSERT INTO saloes (numero,andar,area)
 VALUES (70,'20',121.00);
 

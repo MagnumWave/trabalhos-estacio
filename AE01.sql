@@ -52,10 +52,10 @@ ALTER TABLE Pinturas ADD FOREIGN KEY (Codigo) REFERENCES Obras(Codigo);
 
 /* adicionando indexes */
 
-CREATE UNIQUE INDEX idx_saloes ON Saloes (Area);
-CREATE UNIQUE INDEX idx_autores ON Autores (Nacionalidade);
-CREATE UNIQUE INDEX idx_obras ON Obras (Ano,Autor);
-CREATE UNIQUE INDEX idx_pinturas ON Pinturas (Estilo,Area);
-CREATE UNIQUE INDEX idx_esculturas ON Esculturas (Material);
-CREATE UNIQUE INDEX idx_funcionarios ON Funcionarios (Turno,Funcao);
-CREATE UNIQUE INDEX idx_lotacoes ON Lotacoes (HoraEntrada);
+CREATE INDEX idx_saloes ON Saloes (Area);
+CREATE INDEX idx_autores ON Autores (Nacionalidade);
+CREATE INDEX idx_obras ON Obras (Ano,Autor);
+CREATE INDEX idx_pinturas ON Pinturas (Estilo,Area);
+CREATE INDEX idx_esculturas ON Esculturas (Material);
+CREATE INDEX idx_funcionarios ON Funcionarios (Turno,Funcao);
+CREATE INDEX idx_lotacoes ON Lotacoes (HoraEntrada);
